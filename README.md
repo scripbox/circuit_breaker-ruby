@@ -10,7 +10,7 @@
 ## Usage
 
   ```
-  circuit_breaker = CircuitBreaker.new(
+  circuit_breaker = CircuitBreaker::Shield.new(
     invocation_timeout: 1,
     failure_threshold: 2,
     failure_threshold_percentage, 0.2,
