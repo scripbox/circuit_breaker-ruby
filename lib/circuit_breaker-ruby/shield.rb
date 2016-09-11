@@ -1,25 +1,25 @@
 module CircuitBreaker
   class Shield
-    FAILURE_THRESHOLD = 10
-    FAILURE_THRESHOLD_PERCENTAGE = 0.5
-    INVOCATION_TIMEOUT = 10
-    RETRY_TIMEOUT = 60
-
     module States
       OPEN = :open
       CLOSED = :closed
       HALF_OPEN = :half_open
     end
 
-    attr_reader :invocation_timeout, :failure_threshold, :failure_threshold_percentage, :total_count, :failure_count
+    attr_reader :invocation_timeout, :retry_timeout, :failure_threshold, :failure_threshold_percentage,
+                :total_count, :failure_count
 
     def initialize(**options)
       @failure_count = 0
       @total_count = 0
-      @failure_threshold = options[:failure_threshold] || FAILURE_THRESHOLD
-      @failure_threshold_percentage = options[:failure_threshold_percentage] || FAILURE_THRESHOLD_PERCENTAGE
-      @invocation_timeout = options[:invocation_timeout] || INVOCATION_TIMEOUT
-      @retry_timeout = options[:retry_timeout] || RETRY_TIMEOUT
+      @failure_threshold = options[:failure_threshold] || config.failure_threshold
+      @failure_threshold_percentage = options[:failure_threshold_percentage] || config.failure_threshold_percentage
+      @invocation_timeout = options[:invocation_timeout] || config.invocation_timeout
+      @retry_timeout = options[:retry_timeout] || config.retry_timeout
+    end
+
+    def config
+      CircuitBreaker.config
     end
 
     def call(&block)

@@ -24,6 +24,19 @@
   bundle exec rspec spec
   ```
 
+### Configuration
+
+Add the following configuration to config/initializers/circuit_breaker.rb. These are the default values.
+
+  ```
+  CircuitBreaker.configure do |cb|
+    cb.failure_threshold = 10
+    cb.failure_threshold_percentage = 0.5
+    cb.invocation_timeout = 10
+    cb.retry_timeout = 60
+  end
+  ```
+
 ### Contributing
 
 If you have any issues with circuit_breaker-ruby,

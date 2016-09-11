@@ -1,10 +1,14 @@
 require 'spec_helper'
 require 'circuit_breaker-ruby/shield'
 
+CircuitBreaker.configure do |cb|
+  cb.invocation_timeout = 1
+  cb.retry_timeout = 1
+  cb.failure_threshold = 1
+end
+
 describe CircuitBreaker::Shield do
-  let(:circuit_breaker_shield) do
-    CircuitBreaker::Shield.new(invocation_timeout: 1, retry_timeout: 1, failure_threshold: 1)
-  end
+  let(:circuit_breaker_shield) { CircuitBreaker::Shield.new }
 
   it 'goes to closed state' do
     circuit_breaker_shield.call { sleep(0.1) }
@@ -14,7 +18,7 @@ describe CircuitBreaker::Shield do
 
   it 'goes to open state' do
     no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * CircuitBreaker::Shield::FAILURE_THRESHOLD_PERCENTAGE
+    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
     no_of_success = no_of_tries - no_of_failures
     no_of_success.to_i.times { circuit_breaker_shield.call { sleep(0.1) } }
     no_of_failures.to_i.times { circuit_breaker_shield.call { sleep(2) } }
@@ -24,7 +28,7 @@ describe CircuitBreaker::Shield do
 
   it 'goes to half open state' do
     no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * CircuitBreaker::Shield::FAILURE_THRESHOLD_PERCENTAGE
+    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
     no_of_success = no_of_tries - no_of_failures
     no_of_success.to_i.times { circuit_breaker_shield.call { sleep(0.1) } }
     no_of_failures.to_i.times { circuit_breaker_shield.call { sleep(2) } }
@@ -35,7 +39,7 @@ describe CircuitBreaker::Shield do
 
   it 'raises CircuitBreaker::Shield::Open' do
      no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * CircuitBreaker::Shield::FAILURE_THRESHOLD_PERCENTAGE
+    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
     no_of_success = no_of_tries - no_of_failures
     no_of_success.to_i.times { circuit_breaker_shield.call { sleep(0.1) } }
 
