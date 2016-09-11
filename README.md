@@ -20,7 +20,9 @@
 
 ### Running the specs
 
-`bundle exec rspec spec`
+  ```
+  bundle exec rspec spec
+  ```
 
 ### Contributing
 
