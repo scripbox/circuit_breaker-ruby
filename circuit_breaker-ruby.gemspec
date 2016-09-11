@@ -1,6 +1,4 @@
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'circuit_breaker-ruby'
+require './lib/circuit_breaker-ruby/version'
 
 Gem::Specification.new do |gem|
   gem.name         = 'circuit_breaker-ruby'
@@ -11,11 +9,14 @@ Gem::Specification.new do |gem|
   gem.authors      = ['Vasu Adari']
   gem.email        = 'vasuakeel@gmail.com'
   gem.homepage     = 'https://github.com/vasuadari/circuit_breaker-ruby'
-
-  gem.files        = `git ls-files`.split($/)
-  gem.require_path = 'lib'
-
   gem.license      = 'MIT'
 
+  gem.require_path = 'lib'
+  gem.files        = `git ls-files`.split($/)
+  gem.test_files   = Dir.glob('spec/**/*')
+
   gem.required_ruby_version = '>= 2.1.8'
+
+  gem.add_development_dependency 'rspec', '~> 3'
+  gem.add_development_dependency 'rake', '~> 10'
 end
