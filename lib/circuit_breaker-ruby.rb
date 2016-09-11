@@ -23,7 +23,7 @@ class CircuitBreaker
     @total_count = 0
     @failure_threshold = options[:failure_threshold] || FAILURE_THRESHOLD
     @failure_threshold_percentage = options[:failure_threshold_percentage] || FAILURE_THRESHOLD_PERCENTAGE
-    @invocation_timeout = options[:invocation_timeout] || TIMEOUT
+    @invocation_timeout = options[:invocation_timeout] || INVOCATION_TIMEOUT
     @retry_timeout = options[:retry_timeout] || RETRY_TIMEOUT
   end
 
