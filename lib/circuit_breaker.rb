@@ -31,11 +31,7 @@ class CircuitBreaker
     case prev_state = state
     when States::CLOSED, States::HALF_OPEN
       connect(&block)
-      if prev_state == States::HALF_OPEN
-        @total_count = 0
-      else
-        @total_count += 1
-      end
+      update_total_count(prev_state)
     when States::OPEN
       raise Open
     end
@@ -77,6 +73,14 @@ class CircuitBreaker
       reset
     rescue Timeout::Error => e
       record_failure
+    end
+  end
+
+  def update_total_count(state)
+    if state == States::HALF_OPEN
+      @total_count = 0
+    else
+      @total_count += 1
     end
   end
 
