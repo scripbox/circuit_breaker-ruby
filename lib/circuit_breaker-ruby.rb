@@ -30,8 +30,7 @@ class CircuitBreaker
   def call(&block)
     case prev_state = state
     when States::CLOSED, States::HALF_OPEN
-      connect(&block)
-      update_total_count(prev_state)
+      connect(&block).tap { update_total_count(prev_state) }
     when States::OPEN
       raise Open
     end
@@ -67,13 +66,16 @@ class CircuitBreaker
 
   def connect(&block)
     begin
+      result = nil
       Timeout::timeout(invocation_timeout) do
-        block.call
+        result = block.call
+        reset
       end
-      reset
     rescue Timeout::Error => e
       record_failure
     end
+
+    result
   end
 
   def update_total_count(state)
