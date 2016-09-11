@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'circuit_breaker'
+require 'circuit_breaker-ruby'
 
 describe CircuitBreaker do
   let(:circuit_breaker_instance) do

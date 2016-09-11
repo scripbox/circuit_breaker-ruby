@@ -1,4 +1,4 @@
-require 'circuit_breaker/version'
+require 'circuit_breaker-ruby/version'
 require 'timeout'
 
 class CircuitBreaker
