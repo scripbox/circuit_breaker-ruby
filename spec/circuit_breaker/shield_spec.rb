@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'circuit_breaker-ruby/shield'
+require 'circuit_breaker-ruby'
 
 CircuitBreaker.configure do |cb|
   cb.invocation_timeout = 1
