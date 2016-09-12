@@ -16,6 +16,7 @@
     failure_threshold_percentage, 0.2,
     retry_timeout: 10
   )
+  circuit_breaker.protect { sleep(10) }
   ```
 
 ### Running the specs

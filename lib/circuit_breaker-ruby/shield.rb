@@ -22,7 +22,7 @@ module CircuitBreaker
       CircuitBreaker.config
     end
 
-    def call(&block)
+    def protect(&block)
       case prev_state = state
       when States::CLOSED, States::HALF_OPEN
         connect(&block).tap { update_total_count(prev_state) }
