@@ -17,6 +17,6 @@ Gem::Specification.new do |gem|
 
   gem.required_ruby_version = '>= 2.1.8'
 
-  gem.add_dependency 'rspec', '~> 3'
-  gem.add_dependency 'rake', '~> 10'
+  gem.add_dependency 'rspec', '>= 3'
+  gem.add_dependency 'rake', '>= 10'
 end
