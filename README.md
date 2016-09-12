@@ -42,6 +42,6 @@ Add the following configuration to config/initializers/circuit_breaker.rb. These
 
 If you have any issues with circuit_breaker-ruby,
 or feature requests,
-please [add an issue](https://github.com/vasuadari/circuit_breaker-ruby/issues) on GitHub
+please [add an issue](https://github.com/scripbox/circuit_breaker-ruby/issues) on GitHub
 or fork the project and send a pull request.
 Please include passing specs with all pull requests.

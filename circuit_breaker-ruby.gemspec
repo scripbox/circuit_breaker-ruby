@@ -6,9 +6,9 @@ Gem::Specification.new do |gem|
   gem.date         = '2016-10-09'
   gem.summary      = 'Circuit breaker for ruby'
   gem.description  = 'Self-resetting breaker retries the protected call after a suitable interval, and it also resets when the call succeeds.'
-  gem.authors      = ['Vasu Adari']
-  gem.email        = 'vasuakeel@gmail.com'
-  gem.homepage     = 'https://github.com/vasuadari/circuit_breaker-ruby'
+  gem.author       = 'Scripbox'
+  gem.email        = 'tech@sripbox.com'
+  gem.homepage     = 'https://github.com/scripbox/circuit_breaker-ruby'
   gem.license      = 'MIT'
 
   gem.require_path = 'lib'
