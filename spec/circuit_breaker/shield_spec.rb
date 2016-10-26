@@ -47,4 +47,12 @@ describe CircuitBreaker::Shield do
       raise_error(CircuitBreaker::Open)
     )
   end
+
+  context '#protect' do
+    it 'update invocation_timeout in config' do
+      circuit_breaker_shield.protect(invocation_timeout: 20) {}
+
+      expect(circuit_breaker_shield.invocation_timeout).to be(20)
+    end
+  end
 end

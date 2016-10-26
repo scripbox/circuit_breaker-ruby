@@ -5,6 +5,13 @@ module CircuitBreaker
     INVOCATION_TIMEOUT = 10
     RETRY_TIMEOUT = 60
 
+    UPDATABLE = [
+      :invocation_timeout,
+      :failure_threshold,
+      :failure_threshold_percentage,
+      :retry_timeout
+    ]
+
     attr_accessor :invocation_timeout, :failure_threshold, :failure_threshold_percentage, :retry_timeout
 
     def initialize

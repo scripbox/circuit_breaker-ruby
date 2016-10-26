@@ -22,7 +22,15 @@ module CircuitBreaker
       CircuitBreaker.config
     end
 
-    def protect(&block)
+    def update_config!(options)
+      (CircuitBreaker::Config::UPDATABLE & options.keys).each do |variable|
+        instance_variable_set("@#{variable}", options[variable])
+      end
+    end
+
+    def protect(options = {}, &block)
+      update_config!(options)
+
       case prev_state = state
       when States::CLOSED, States::HALF_OPEN
         connect(&block).tap { update_total_count(prev_state) }
