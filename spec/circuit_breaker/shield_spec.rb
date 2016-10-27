@@ -60,7 +60,7 @@ describe CircuitBreaker::Shield do
       circuit_breaker_shield = CircuitBreaker::Shield.new(callback: callback)
       expect(callback).to receive(:call).and_return('Success')
 
-      circuit_breaker_shield.protect { }
+      circuit_breaker_shield.protect { { response: 'Dummy response' } }
     end
   end
 end
