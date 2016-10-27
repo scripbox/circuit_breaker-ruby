@@ -16,6 +16,7 @@ module CircuitBreaker
       @failure_threshold_percentage = options[:failure_threshold_percentage] || config.failure_threshold_percentage
       @invocation_timeout = options[:invocation_timeout] || config.invocation_timeout
       @retry_timeout = options[:retry_timeout] || config.retry_timeout
+      @callback = options[:callback]
     end
 
     def config
@@ -71,7 +72,11 @@ module CircuitBreaker
       begin
         result = nil
         Timeout::timeout(invocation_timeout) do
+          start_time = Time.now
           result = block.call
+          duration = Time.now - start_time
+          @callback.respond_to?(:call) &&
+            invoke_callback({ duration: duration }.merge(result || {}))
           reset
         end
       rescue Timeout::Error => e
@@ -92,6 +97,10 @@ module CircuitBreaker
     def record_failure
       @last_failure_time = Time.now
       @failure_count += 1
+    end
+
+    def invoke_callback(options)
+      @callback.call(options)
     end
   end
 end

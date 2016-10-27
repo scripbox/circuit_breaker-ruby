@@ -38,7 +38,7 @@ describe CircuitBreaker::Shield do
   end
 
   it 'raises CircuitBreaker::Shield::Open' do
-     no_of_tries = circuit_breaker_shield.failure_threshold * 2
+    no_of_tries = circuit_breaker_shield.failure_threshold * 2
     no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
     no_of_success = no_of_tries - no_of_failures
     no_of_success.to_i.times { circuit_breaker_shield.protect { sleep(0.1) } }
@@ -53,6 +53,14 @@ describe CircuitBreaker::Shield do
       circuit_breaker_shield.protect(invocation_timeout: 20) {}
 
       expect(circuit_breaker_shield.invocation_timeout).to be(20)
+    end
+
+    it 'invokes callback on success' do
+      callback = proc { 'Success' }
+      circuit_breaker_shield = CircuitBreaker::Shield.new(callback: callback)
+      expect(callback).to receive(:call).and_return('Success')
+
+      circuit_breaker_shield.protect { }
     end
   end
 end
