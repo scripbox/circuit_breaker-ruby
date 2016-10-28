@@ -75,7 +75,7 @@ module CircuitBreaker
           start_time = Time.now
           result = block.call
           duration = Time.now - start_time
-          invoke_callback({ duration: duration }.merge(result)) if result.is_a?(Hash)
+          invoke_callback(result, duration: duration)
           reset
         end
       rescue Timeout::Error => e
@@ -99,8 +99,8 @@ module CircuitBreaker
       @failure_count += 1
     end
 
-    def invoke_callback(options = {})
-      @callback.respond_to?(:call) && @callback.call(options)
+    def invoke_callback(result = nil, options = {})
+      @callback.respond_to?(:call) && @callback.call(result, options)
     end
   end
 end
