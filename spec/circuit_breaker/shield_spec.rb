@@ -1,55 +1,83 @@
 require 'spec_helper'
 require 'circuit_breaker-ruby'
-
-CircuitBreaker.configure do |cb|
-  cb.invocation_timeout = 1
-  cb.retry_timeout = 1
-  cb.failure_threshold = 1
-end
+require 'timecop'
 
 describe CircuitBreaker::Shield do
-  let(:circuit_breaker_shield) { CircuitBreaker::Shield.new }
+  context 'with no failures' do
+    it 'goes to closed state' do
+      circuit_breaker_shield = CircuitBreaker::Shield.new(
+        invocation_timeout: 1,
+        retry_timeout: 1,
+        failure_threshold: 1
+      )
 
-  it 'goes to closed state' do
-    circuit_breaker_shield.protect { sleep(0.1) }
-
-    expect(circuit_breaker_shield.send :state).to be(CircuitBreaker::Shield::States::CLOSED)
+      circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+      expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+    end
   end
 
-  it 'goes to open state' do
-    no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
-    no_of_success = no_of_tries - no_of_failures
-    no_of_success.to_i.times { circuit_breaker_shield.protect { sleep(0.1) } }
-    no_of_failures.to_i.times { circuit_breaker_shield.protect { sleep(2) } }
+  context 'with failures less than threshold' do
+    it 'goes to closed state' do
+      retry_timeout = 1
 
-    expect(circuit_breaker_shield.send :state).to be(CircuitBreaker::Shield::States::OPEN)
+      circuit_breaker_shield = CircuitBreaker::Shield.new(
+        invocation_timeout: 1,
+        retry_timeout: retry_timeout,
+        failure_threshold: 2
+      )
+
+      circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+      expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+
+      expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+    end
   end
 
-  it 'goes to half open state' do
-    no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
-    no_of_success = no_of_tries - no_of_failures
-    no_of_success.to_i.times { circuit_breaker_shield.protect { sleep(0.1) } }
-    no_of_failures.to_i.times { circuit_breaker_shield.protect { sleep(2) } }
-    sleep(1)
+  context 'with failures more than threshold' do
+    context 'within retry_timeout' do
+      it 'goes to open state' do
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          retry_timeout: 1,
+          failure_threshold: 1
+        )
 
-    expect(circuit_breaker_shield.send :state).to be(CircuitBreaker::Shield::States::HALF_OPEN)
-  end
+        circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::Open) # fail twice
 
-  it 'raises CircuitBreaker::Shield::Open' do
-    no_of_tries = circuit_breaker_shield.failure_threshold * 2
-    no_of_failures = no_of_tries * circuit_breaker_shield.config.failure_threshold_percentage
-    no_of_success = no_of_tries - no_of_failures
-    no_of_success.to_i.times { circuit_breaker_shield.protect { sleep(0.1) } }
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::OPEN)
+      end
+    end
 
-    expect { (no_of_failures.to_i + 1).times { circuit_breaker_shield.protect { sleep(2) } } }.to(
-      raise_error(CircuitBreaker::Open)
-    )
+    context 'after retry_timeout' do
+      it 'goes to half open state' do
+        retry_timeout = 1
+
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          retry_timeout: retry_timeout,
+          failure_threshold: 1
+        )
+
+        circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+
+        Timecop.freeze(Time.now + retry_timeout) do
+          expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::HALF_OPEN)
+        end
+      end
+    end
   end
 
   context '#protect' do
     it 'update invocation_timeout in config' do
+      circuit_breaker_shield = CircuitBreaker::Shield.new(
+        invocation_timeout: 1,
+        retry_timeout: 1,
+        failure_threshold: 1
+      )
+
       circuit_breaker_shield.protect(invocation_timeout: 20) {}
 
       expect(circuit_breaker_shield.invocation_timeout).to be(20)
@@ -57,10 +85,30 @@ describe CircuitBreaker::Shield do
 
     it 'invokes callback on success' do
       callback = proc { 'Success' }
-      circuit_breaker_shield = CircuitBreaker::Shield.new(callback: callback)
+      circuit_breaker_shield = CircuitBreaker::Shield.new(
+        invocation_timeout: 1,
+        retry_timeout: 1,
+        failure_threshold: 1,
+        callback: callback
+      )
+
       expect(callback).to receive(:call).and_return('Success')
 
       circuit_breaker_shield.protect { { response: 'Dummy response' } }
+    end
+
+    context 'with timeout error' do
+      it 're-raises timeout error' do
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          retry_timeout: 1,
+          failure_threshold: 1
+        )
+
+        invocation_block = proc{ raise Timeout::Error }
+
+        expect {circuit_breaker_shield.protect(&invocation_block)}.to raise_error(CircuitBreaker::TimeoutError)
+      end
     end
   end
 end
