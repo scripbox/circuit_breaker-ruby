@@ -23,6 +23,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
+    timecop (0.8.1)
 
 PLATFORMS
   ruby
@@ -31,6 +32,7 @@ DEPENDENCIES
   circuit_breaker-ruby!
   rake
   rspec (>= 3.1)
+  timecop (~> 0.8.1)
 
 BUNDLED WITH
-   1.11.2
+   1.14.6

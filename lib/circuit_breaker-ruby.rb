@@ -5,6 +5,7 @@ require 'timeout'
 
 module CircuitBreaker
   class Open < StandardError; end
+  class TimeoutError < StandardError; end
 
   class << self
     def config

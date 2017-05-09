@@ -6,8 +6,12 @@ module CircuitBreaker
       HALF_OPEN = :half_open
     end
 
-    attr_reader :invocation_timeout, :retry_timeout, :failure_threshold, :failure_threshold_percentage,
-                :total_count, :failure_count
+    attr_reader :invocation_timeout,
+                :retry_timeout,
+                :failure_threshold,
+                :failure_threshold_percentage,
+                :total_count,
+                :failure_count
 
     def initialize(**options)
       @failure_count = 0
@@ -43,10 +47,9 @@ module CircuitBreaker
     private
 
     def state
-      case
-      when reached_failure_threshold? && reached_retry_timeout?
+      if reached_failure_threshold? && reached_retry_timeout?
         States::HALF_OPEN
-      when reached_failure_threshold?
+      elsif reached_failure_threshold?
         States::OPEN
       else
         States::CLOSED
@@ -54,9 +57,11 @@ module CircuitBreaker
     end
 
     def reached_failure_threshold?
-      (failure_count >= failure_threshold) &&
-        (total_count != 0 &&
-          (failure_count.to_f / total_count.to_f) >= failure_threshold_percentage)
+      @_reached_failure_threshold ||= begin
+        (failure_count >= failure_threshold) &&
+          (total_count != 0 &&
+            (failure_count.to_f / total_count.to_f) >= failure_threshold_percentage)
+      end
     end
 
     def reached_retry_timeout?
@@ -71,16 +76,17 @@ module CircuitBreaker
     def connect(&block)
       begin
         result = nil
-        Timeout::timeout(invocation_timeout) do
+        ::Timeout::timeout(invocation_timeout) do
           start_time = Time.now
           result = block.call
           duration = Time.now - start_time
           invoke_callback(result, duration: duration)
           reset
         end
-      rescue Timeout::Error => e
+      rescue ::Timeout::Error => e
         record_failure
         invoke_callback
+        raise CircuitBreaker::TimeoutError
       end
 
       result
