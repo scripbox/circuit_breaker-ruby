@@ -22,13 +22,13 @@
   circuit_breaker.protect { sleep(10) }
   ```
 
-### Running the specs
+## Running the specs
 
   ```ruby
   bundle exec rspec spec
   ```
 
-### Configuration
+## Configuration
 
 Add the following configuration to config/initializers/circuit_breaker.rb. These are the default values.
 
@@ -41,7 +41,7 @@ Add the following configuration to config/initializers/circuit_breaker.rb. These
   end
   ```
 
-### Contributing
+## Contributing
 
 If you have any issues with circuit_breaker-ruby,
 or feature requests,
