@@ -1,5 +1,6 @@
 ## Circuit Breaker
 [![Gem Version](https://img.shields.io/gem/v/circuit_breaker-ruby.svg?style=flat)](http://rubygems.org/gems/circuit_breaker-ruby)
+[![Gem Downloads](https://img.shields.io/gem/dt/circuit_breaker-ruby.svg?style=flat)](http://rubygems.org/gems/circuit_breaker-ruby)
 [![Build Status](https://travis-ci.org/scripbox/circuit_breaker-ruby.svg?style=flat&branch=master)](https://travis-ci.org/scripbox/circuit_breaker-ruby)
 
   A circuit breaker which terminates a connection or block of code from executing when it reaches the failure threshold and a percentage. Also it gets reset when a connection succeeds. It also keeps monitoring if connections are working again by checking if it has attained a time to retry.
