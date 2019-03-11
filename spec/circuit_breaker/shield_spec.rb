@@ -43,9 +43,10 @@ describe CircuitBreaker::Shield do
         )
 
         circuit_breaker_shield.protect { sleep(0.1) } # succeed once
-        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
-        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::Open) # fail twice
-
+        expect(circuit_breaker_shield.total_count).to eql(1)
+        expect { circuit_breaker_shield.protect { sleep(1.1) } }.to raise_error(CircuitBreaker::TimeoutError) # fail once
+        expect(circuit_breaker_shield.total_count).to eql(2)
+        expect { circuit_breaker_shield.protect { sleep(1.1) } }.to raise_error(CircuitBreaker::Open) # fail twice
         expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::OPEN)
       end
     end
