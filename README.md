@@ -6,13 +6,13 @@
 
 ## Installation
 
-  ```
+  ```ruby
   gem install circuit_breaker-ruby
   ```
 
 ## Usage
 
-  ```
+  ```ruby
   circuit_breaker = CircuitBreaker::Shield.new(
     invocation_timeout: 1,
     failure_threshold: 2,
@@ -24,7 +24,7 @@
 
 ### Running the specs
 
-  ```
+  ```ruby
   bundle exec rspec spec
   ```
 
@@ -32,7 +32,7 @@
 
 Add the following configuration to config/initializers/circuit_breaker.rb. These are the default values.
 
-  ```
+  ```ruby
   CircuitBreaker.configure do |cb|
     cb.failure_threshold = 10
     cb.failure_threshold_percentage = 0.5
@@ -48,3 +48,9 @@ or feature requests,
 please [add an issue](https://github.com/scripbox/circuit_breaker-ruby/issues) on GitHub
 or fork the project and send a pull request.
 Please include passing specs with all pull requests.
+
+## Copyright and License
+
+Copyright (c) 2019, Scripbox.
+
+circuit_breaker-ruby source code is licensed under the [MIT License](MIT-LICENSE).
