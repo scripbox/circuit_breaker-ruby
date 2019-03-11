@@ -16,7 +16,7 @@
   circuit_breaker = CircuitBreaker::Shield.new(
     invocation_timeout: 1,
     failure_threshold: 2,
-    failure_threshold_percentage, 0.2,
+    failure_threshold_percentage: 0.2,
     retry_timeout: 10
   )
   circuit_breaker.protect { sleep(10) }
