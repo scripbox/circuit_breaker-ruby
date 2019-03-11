@@ -70,6 +70,7 @@ module CircuitBreaker
 
     def reset
       @failure_count = 0
+      @total_count = 0
       @state = States::CLOSED
     end
 
