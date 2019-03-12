@@ -3,12 +3,19 @@
 [![Gem Downloads](https://img.shields.io/gem/dt/circuit_breaker-ruby.svg?style=flat)](http://rubygems.org/gems/circuit_breaker-ruby)
 [![Build Status](https://travis-ci.org/scripbox/circuit_breaker-ruby.svg?style=flat&branch=master)](https://travis-ci.org/scripbox/circuit_breaker-ruby)
 
-  A circuit breaker which terminates a connection or block of code from executing when it reaches the failure threshold and a percentage. Also it gets reset when a connection succeeds. It also keeps monitoring if connections are working again by checking if it has attained a time to retry.
+  A circuit breaker which terminates the connection or block of code from executing when it reaches the timeout. It helps in preventing blocking requests from slowing down your server.
 
-## Installation
+## How it works
 
+Refer the following diagram:
+
+![CircuitBreaker](https://raw.githubusercontent.com/scripbox/circuit_breaker-ruby/master/circuit_breaker.png)
+
+## Getting started
+
+  Add following line to your Gemfile:
   ```ruby
-  gem install circuit_breaker-ruby
+  gem 'circuit_breaker-ruby', '~> 0.1.3'
   ```
 
 ## Usage
@@ -23,15 +30,15 @@
   circuit_breaker.protect { sleep(10) }
   ```
 
-## Running the specs
+## Running tests
 
   ```ruby
-  bundle exec rspec spec
+  bundle exec rake
   ```
 
 ## Configuration
 
-Add the following configuration to config/initializers/circuit_breaker.rb. These are the default values.
+Add the following configuration to `config/initializers/circuit_breaker.rb`. These are the default values.
 
   ```ruby
   CircuitBreaker.configure do |cb|
@@ -55,3 +62,7 @@ Please include passing specs with all pull requests.
 Copyright (c) 2019, Scripbox.
 
 circuit_breaker-ruby source code is licensed under the [MIT License](MIT-LICENSE).
+
+## References
+
+[CircuitBreaker](https://martinfowler.com/bliki/CircuitBreaker.html) - [Martin Fowler](https://en.wikipedia.org/wiki/Martin_Fowler_(software_engineer))
