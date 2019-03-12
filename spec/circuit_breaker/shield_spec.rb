@@ -89,7 +89,7 @@ describe CircuitBreaker::Shield do
       end
     end
 
-    context 'failure when circuit in half-open state' do
+    context 'when circuit is in half-open state' do
       it 'goes to open state' do
         retry_timeout = 1
 
