@@ -89,18 +89,14 @@ module CircuitBreaker
         invoke_callback
         raise CircuitBreaker::TimeoutError
       ensure
-        update_total_count(prev_state)
+        increment_total_count(prev_state)
       end
 
       result
     end
 
-    def update_total_count(state)
-      if state == States::HALF_OPEN
-        @total_count = 0
-      else
-        @total_count += 1
-      end
+    def increment_total_count(state)
+      @total_count += 1
     end
 
     def record_failure
