@@ -16,10 +16,10 @@ module CircuitBreaker
     def initialize(**options)
       @failure_count = 0
       @total_count = 0
-      @failure_threshold = options[:failure_threshold] || config.failure_threshold
-      @failure_threshold_percentage = options[:failure_threshold_percentage] || config.failure_threshold_percentage
-      @invocation_timeout = options[:invocation_timeout] || config.invocation_timeout
-      @retry_timeout = options[:retry_timeout] || config.retry_timeout
+      @failure_threshold = options.fetch(:failure_threshold, config.failure_threshold)
+      @failure_threshold_percentage = options.fetch(:failure_threshold_percentage, config.failure_threshold_percentage)
+      @invocation_timeout = options.fetch(:invocation_timeout, config.invocation_timeout)
+      @retry_timeout = options.fetch(:retry_timeout, config.retry_timeout)
       @callback = options[:callback]
     end
 
@@ -28,9 +28,7 @@ module CircuitBreaker
     end
 
     def update_config!(options)
-      (CircuitBreaker::Config::UPDATABLE & options.keys).each do |variable|
-        instance_variable_set("@#{variable}", options[variable])
-      end
+      CircuitBreaker::Config.update(self, options)
     end
 
     def protect(options = {}, &block)
@@ -38,7 +36,7 @@ module CircuitBreaker
 
       case prev_state = state
       when States::CLOSED, States::HALF_OPEN
-        connect(prev_state, &block)
+        connect(&block)
       when States::OPEN
         raise CircuitBreaker::Open
       end
@@ -47,9 +45,9 @@ module CircuitBreaker
     private
 
     def state
-      if reached_failure_threshold? && reached_retry_timeout?
+      if reached_failure_threshold? && reached_failure_threshold_percentage? && reached_retry_timeout?
         States::HALF_OPEN
-      elsif reached_failure_threshold?
+      elsif reached_failure_threshold? && reached_failure_threshold_percentage?
         States::OPEN
       else
         States::CLOSED
@@ -57,11 +55,11 @@ module CircuitBreaker
     end
 
     def reached_failure_threshold?
-      @_reached_failure_threshold ||= begin
-        (failure_count >= failure_threshold) &&
-          (total_count != 0 &&
-            (failure_count.to_f / total_count.to_f) >= failure_threshold_percentage)
-      end
+      (failure_count >= failure_threshold)
+    end
+
+    def reached_failure_threshold_percentage?
+      (total_count.nonzero? && (failure_count.to_f / total_count.to_f) >= failure_threshold_percentage)
     end
 
     def reached_retry_timeout?
@@ -74,7 +72,7 @@ module CircuitBreaker
       @state = States::CLOSED
     end
 
-    def connect(prev_state, &block)
+    def connect(&block)
       begin
         result = nil
         ::Timeout::timeout(invocation_timeout) do
@@ -89,13 +87,13 @@ module CircuitBreaker
         invoke_callback
         raise CircuitBreaker::TimeoutError
       ensure
-        increment_total_count(prev_state)
+        increment_total_count
       end
 
       result
     end
 
-    def increment_total_count(state)
+    def increment_total_count
       @total_count += 1
     end
 

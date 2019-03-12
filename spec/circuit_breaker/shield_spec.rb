@@ -118,6 +118,44 @@ describe CircuitBreaker::Shield do
         end
       end
     end
+
+    context 'when circuit is in open state and goes to closed state' do
+      it 'remains in closed state until it reaches failure_threshold' do
+        retry_timeout = 3
+
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          retry_timeout: retry_timeout,
+          failure_threshold: 2
+        )
+
+        circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+        expect(circuit_breaker_shield.total_count).to eql(1)
+        expect(circuit_breaker_shield.failure_count).to eql(0)
+
+        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+        expect(circuit_breaker_shield.total_count).to eql(2)
+        expect(circuit_breaker_shield.failure_count).to eql(1)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+
+        expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail twice
+        expect(circuit_breaker_shield.total_count).to eql(3)
+        expect(circuit_breaker_shield.failure_count).to eql(2)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::OPEN)
+
+        Timecop.freeze(Time.now + retry_timeout) do
+          circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+          expect(circuit_breaker_shield.total_count).to eql(1)
+          expect(circuit_breaker_shield.failure_count).to eql(0)
+          expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+
+          expect {circuit_breaker_shield.protect { sleep(1.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+          expect(circuit_breaker_shield.total_count).to eql(2)
+          expect(circuit_breaker_shield.failure_count).to eql(1)
+          expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+        end
+      end
+    end
   end
 
   context '#protect' do
