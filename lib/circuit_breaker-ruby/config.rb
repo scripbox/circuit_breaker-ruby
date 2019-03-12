@@ -20,5 +20,11 @@ module CircuitBreaker
       self.invocation_timeout = INVOCATION_TIMEOUT
       self.retry_timeout = RETRY_TIMEOUT
     end
+
+    def self.update(klass, options)
+      (UPDATABLE & options.keys).each do |variable|
+        klass.instance_variable_set("@#{variable}", options[variable])
+      end
+    end
   end
 end
