@@ -57,7 +57,7 @@ module CircuitBreaker
     end
 
     def reached_failure_threshold?
-      @_reached_failure_threshold ||= begin
+      @_reached_failure_threshold = begin
         (failure_count >= failure_threshold) &&
           (total_count != 0 &&
             (failure_count.to_f / total_count.to_f) >= failure_threshold_percentage)
