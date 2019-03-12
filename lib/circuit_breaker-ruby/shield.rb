@@ -96,11 +96,7 @@ module CircuitBreaker
     end
 
     def update_total_count(state)
-      if state == States::HALF_OPEN
-        @total_count = 0
-      else
-        @total_count += 1
-      end
+      @total_count += 1
     end
 
     def record_failure
