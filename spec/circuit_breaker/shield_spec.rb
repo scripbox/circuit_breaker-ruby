@@ -198,5 +198,58 @@ describe CircuitBreaker::Shield do
         expect {circuit_breaker_shield.protect(&invocation_block)}.to raise_error(CircuitBreaker::TimeoutError)
       end
     end
+
+    context 'when backoff_initial and backoff_max are present' do
+      it 'modifies the retry_timeout when circuit goes to open state' do
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          backoff_initial: 60,
+          failure_threshold: 2
+        )
+
+        circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+        expect(circuit_breaker_shield.total_count).to eql(1)
+        expect(circuit_breaker_shield.failure_count).to eql(0)
+
+        expect {circuit_breaker_shield.protect { sleep(60.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+        expect(circuit_breaker_shield.total_count).to eql(2)
+        expect(circuit_breaker_shield.failure_count).to eql(1)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+
+        expect {circuit_breaker_shield.protect { sleep(60.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail twice
+        expect(circuit_breaker_shield.total_count).to eql(3)
+        expect(circuit_breaker_shield.failure_count).to eql(2)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::OPEN)
+        expect(circuit_breaker_shield.retry_timeout).to be > (60 ** 1.5)
+      end
+
+      it 'expects to be in half-open state after retry_timeout' do
+        circuit_breaker_shield = CircuitBreaker::Shield.new(
+          invocation_timeout: 1,
+          backoff_initial: 60,
+          failure_threshold: 2
+        )
+
+        circuit_breaker_shield.protect { sleep(0.1) } # succeed once
+        expect(circuit_breaker_shield.total_count).to eql(1)
+        expect(circuit_breaker_shield.failure_count).to eql(0)
+
+        expect {circuit_breaker_shield.protect { sleep(60.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail once
+        expect(circuit_breaker_shield.total_count).to eql(2)
+        expect(circuit_breaker_shield.failure_count).to eql(1)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::CLOSED)
+
+        expect {circuit_breaker_shield.protect { sleep(60.1) }}.to raise_error(CircuitBreaker::TimeoutError) # fail twice
+        expect(circuit_breaker_shield.total_count).to eql(3)
+        expect(circuit_breaker_shield.failure_count).to eql(2)
+        expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::OPEN)
+        expect(circuit_breaker_shield.retry_timeout).to be > (60 ** 1.5)
+
+        Timecop.freeze(Time.now + (60 ** 1.5) + 30) do
+          expect(circuit_breaker_shield.send(:state)).to be(CircuitBreaker::Shield::States::HALF_OPEN)
+          expect(circuit_breaker_shield.retry_timeout).to be > (60 ** 1.5)
+        end
+      end
+    end
   end
 end
