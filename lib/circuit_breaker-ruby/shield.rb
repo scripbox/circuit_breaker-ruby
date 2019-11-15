@@ -11,15 +11,27 @@ module CircuitBreaker
                 :failure_threshold,
                 :failure_threshold_percentage,
                 :total_count,
-                :failure_count
+                :failure_count,
+                :backoff_initial,
+                :backoff_max,
+                :backoff_count,
+                :backoff_exponent
 
     def initialize(**options)
       @failure_count = 0
       @total_count = 0
+      @backoff_exponent = 1.5
+      @backoff_initial = options.fetch(:backoff_initial, nil)
+      @backoff_max = options.fetch(:backoff_max, nil)
+      @backoff_count = 0
       @failure_threshold = options.fetch(:failure_threshold, config.failure_threshold)
       @failure_threshold_percentage = options.fetch(:failure_threshold_percentage, config.failure_threshold_percentage)
       @invocation_timeout = options.fetch(:invocation_timeout, config.invocation_timeout)
-      @retry_timeout = options.fetch(:retry_timeout, config.retry_timeout)
+      if @backoff_initial.nil?
+        @retry_timeout = options.fetch(:retry_timeout, config.retry_timeout)
+      else
+        @retry_timeout = @backoff_initial
+      end
       @callback = options[:callback]
     end
 
@@ -48,10 +60,18 @@ module CircuitBreaker
       if reached_failure_threshold? && reached_failure_threshold_percentage? && reached_retry_timeout?
         States::HALF_OPEN
       elsif reached_failure_threshold? && reached_failure_threshold_percentage?
+        set_new_retry_timeout
         States::OPEN
       else
         States::CLOSED
       end
+    end
+
+    def set_new_retry_timeout
+      return if @backoff_initial.nil?
+
+      @backoff_count += 1
+      @retry_timeout = ExponentialBackoff.calc_next_backoff(@backoff_count, @backoff_initial, @backoff_max, @backoff_exponent)
     end
 
     def reached_failure_threshold?
@@ -69,6 +89,7 @@ module CircuitBreaker
     def reset
       @failure_count = 0
       @total_count = 0
+      @backoff_count = 0
       @state = States::CLOSED
     end
 

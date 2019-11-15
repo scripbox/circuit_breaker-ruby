@@ -9,10 +9,12 @@ module CircuitBreaker
       :invocation_timeout,
       :failure_threshold,
       :failure_threshold_percentage,
-      :retry_timeout
+      :retry_timeout,
+      :backoff_initial,
+      :backoff_max
     ]
 
-    attr_accessor :invocation_timeout, :failure_threshold, :failure_threshold_percentage, :retry_timeout
+    attr_accessor :invocation_timeout, :failure_threshold, :failure_threshold_percentage, :retry_timeout, :backoff_initial, :backoff_max
 
     def initialize
       self.failure_threshold = FAILURE_THRESHOLD

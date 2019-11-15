@@ -1,5 +1,6 @@
 require 'circuit_breaker-ruby/version'
 require 'circuit_breaker-ruby/config'
+require 'circuit_breaker-ruby/exponential_backoff'
 require 'circuit_breaker-ruby/shield'
 require 'timeout'
 
