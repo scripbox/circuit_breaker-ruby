@@ -9,7 +9,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.2.5)
-    rake (11.1.2)
+    rake (13.0.1)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
       rspec-expectations (~> 3.5.0)
@@ -30,9 +30,9 @@ PLATFORMS
 
 DEPENDENCIES
   circuit_breaker-ruby!
-  rake
+  rake (>= 12.3.3)
   rspec (>= 3.1)
   timecop (~> 0.8.1)
 
 BUNDLED WITH
-   1.16.1
+   1.17.3
