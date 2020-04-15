@@ -1,7 +1,7 @@
 ## Circuit Breaker
 [![Gem Version](https://img.shields.io/gem/v/circuit_breaker-ruby.svg?style=flat)](http://rubygems.org/gems/circuit_breaker-ruby)
 [![Gem Downloads](https://img.shields.io/gem/dt/circuit_breaker-ruby.svg?style=flat)](http://rubygems.org/gems/circuit_breaker-ruby)
-[![Build Status](https://travis-ci.org/scripbox/circuit_breaker-ruby.svg?style=flat&branch=master)](https://travis-ci.org/scripbox/circuit_breaker-ruby)
+![build](https://github.com/scripbox/circuit_breaker-ruby/workflows/build/badge.svg)
 
   A circuit breaker which terminates the connection or block of code from executing when it reaches the timeout. It helps in preventing blocking requests from slowing down your server.
 
